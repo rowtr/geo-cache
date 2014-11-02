@@ -1,6 +1,5 @@
 (ns geo-cache.cache
-  (:import java.util.UUID)
-  (:require [qbits.tardis :as uuid]))
+  (:import java.util.UUID))
 
 (defprotocol IGeoCache
   (memoize-geocode  [this f])
@@ -14,10 +13,6 @@
 (defn coords->str
   [location]
   (str (:lat location) "," (:lng location)))  
-
-(defn get-type1-uuid
-  []
-  (java.util.UUID/fromString (str (uuid/unique-time-uuid))))
 
 (defn sha1 [s]
      (->> (-> "sha1"
