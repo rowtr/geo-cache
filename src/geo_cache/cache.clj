@@ -5,6 +5,21 @@
   (memoize-geocode  [this f])
   (memoize-weight   [this f]))
 
+(defmacro make-memoize-geocode [{:keys  [infn getfn addfn]}]
+    `(fn [addr#]
+      (if-let [e# (~getfn (:address addr#))]
+        (merge addr# (select-keys e# [:lat :lng]))
+        (let [ret# (~infn addr#)]
+          (~addfn (:address ret#) (:lat ret#) (:lng ret#))
+          (merge addr# ret#)))))
+
+(defmacro make-memoize-weight [{:keys  [infn getfn addfn]}]
+  `(fn [from# to#]
+      (if-let [e# (~getfn from# to#)]
+        (select-keys e# [:distance :duration :points])
+        (let [ret# (~infn from# to#)]
+          (~addfn from# to#  (:distance ret#) (:duration ret#) (:points ret#))
+          ret#))))
 
 (defmulti get-cache :type)
 

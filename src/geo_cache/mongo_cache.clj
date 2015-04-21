@@ -24,25 +24,28 @@
     (if conn true false)))
 
 (defn get-weight-from-cache [cache from to]
-  (let [hash (shahash from to)
-        conn @(:conn cache) ]
-    (when (cache-ready? cache) (mc/find-one-as-map (:db conn) (:edge cache) {:id hash}))))
+  (when (cache-ready? cache) 
+    (let [hash (shahash from to)
+          conn @(:conn cache)]
+      (mc/find-one-as-map (:db conn) (:edge cache) {:id hash}))))
 
 (defn add-weight-to-cache [cache from to distance duration points]
-  (let [hash (shahash from to)
-        conn @(:conn cache)]
-    (when (cache-ready? cache)
-      (mc/insert (:db conn) (:edge cache) {:id hash :distance distance :duration duration :points points :cache-date (Date.)}))
-    (assoc {} :distance distance :duration duration)))
+  (when (cache-ready? cache)
+    (let [hash (shahash from to)
+          conn @(:conn cache)]
+      (mc/insert (:db conn) (:edge cache) {:id hash :distance distance :duration duration :points points :cache-date (Date.)})))
+  (assoc {} :distance distance :duration duration))
   
 (defn get-geocode-from-cache [cache address]
-  (let [conn @(:conn cache)]
-  (when (cache-ready? cache) (mc/find-one-as-map (:db conn) (:address cache) {:address (trim address)}))))
+  (when (cache-ready? cache)
+    (let [conn @(:conn cache)] 
+      (mc/find-one-as-map (:db conn) (:address cache) {:address (trim address)}))))
 
 (defn add-geocode-to-cache [cache address lat lng]
-  (let [conn  @(:conn cache)]
-    (when (cache-ready? cache) (mc/insert (:db conn) (:address cache) {:address address :lat lat :lng lng}))
-    (assoc {} :address address :lat lat :lng lng)))
+  (when (cache-ready? cache)
+    (let [conn  @(:conn cache)] 
+      (mc/insert (:db conn) (:address cache) {:address address :lat lat :lng lng})))
+  (assoc {} :address address :lat lat :lng lng))
 
  
 (defrecord MongoCache []
@@ -63,7 +66,7 @@
           ret)))))
 
 (defmethod get-cache :mongo 
-  [{:keys [uri db address edge] :as args}]
-  (when (not (and uri db address edge)) (throw (Exception. (str "Missing required arguments: uri: " uri " db: " db " address: " address " edge: " edge))))
+  [{:keys [uri address edge] :as args}]
+  (when (not (and uri address edge)) (throw (Exception. (str "Missing required arguments: uri: " uri " address: " address " edge: " edge))))
   (let [conn  (atom (mg/connect-via-uri uri))]
     (MongoCache. nil (assoc args :conn conn))))
