@@ -9,64 +9,50 @@
   (:import java.util.Date))
 
 
-(defn mongo-instance? [conn]
-  (instance? com.mongodb.MongoClient (:conn conn)))
-
-(defn mongo-open? [conn]
-  (.. (:conn conn) (getConnector) (isOpen)))
 
 
-(defn cache-ready? [the-cache]
-  (let [conn  (if 
-							  (and (mongo-instance? @(:conn the-cache)) (mongo-open? @(:conn the-cache)))
-							  @(:conn the-cache)
-                (do (reset! (:conn the-cache) (mg/connect-via-uri (:uri the-cache))) @(:conn the-cache)))]
-    (if conn true false)))
+(defonce cache (atom nil))
 
-(defn get-weight-from-cache [cache from to]
-  (when (cache-ready? cache) 
+(defn cache-ready? []
+  (let [icache @cache]
+    (try
+      (.getStats (:db icache))
+      (catch Exception e
+        (swap! cache merge (mg/connect-via-uri (:uri icache)))))
+    (if (.getStats (:db @cache)) true false)))
+
+(defn get-weight-from-cache [{:keys [from to]}]
+  (when (cache-ready?)
     (let [hash (shahash from to)
-          conn @(:conn cache)]
-      (mc/find-one-as-map (:db conn) (:edge cache) {:id hash}))))
+          cache   @cache]
+      (mc/find-one-as-map (:db cache) (:edge cache) {:id hash}))))
 
-(defn add-weight-to-cache [cache from to distance duration points]
-  (when (cache-ready? cache)
+(defn add-weight-to-cache [from to distance duration points]
+  (when (cache-ready?)
     (let [hash (shahash from to)
-          conn @(:conn cache)]
-      (mc/insert (:db conn) (:edge cache) {:id hash :distance distance :duration duration :points points :cache-date (Date.)})))
+          cache   @cache]
+      (mc/insert (:db cache) (:edge cache) {:id hash :distance distance :duration duration :points points :cache-date (Date.)})))
   (assoc {} :distance distance :duration duration))
-  
-(defn get-geocode-from-cache [cache address]
-  (when (cache-ready? cache)
-    (let [conn @(:conn cache)] 
-      (mc/find-one-as-map (:db conn) (:address cache) {:address (trim address)}))))
 
-(defn add-geocode-to-cache [cache address lat lng]
-  (when (cache-ready? cache)
-    (let [conn  @(:conn cache)] 
-      (mc/insert (:db conn) (:address cache) {:address address :lat lat :lng lng})))
+(defn get-geocode-from-cache [address]
+  (when (cache-ready?)
+    (let [cache   @cache]
+      (mc/find-one-as-map (:db cache) (:address cache) {:address (trim address)}))))
+
+(defn add-geocode-to-cache [address lat lng]
+  (when (cache-ready?)
+    (let [cache    @cache]
+      (mc/insert (:db cache) (:address cache) {:address address :lat lat :lng lng})))
   (assoc {} :address address :lat lat :lng lng))
 
- 
 (defrecord MongoCache []
   cache/IGeoCache
-  (memoize-geocode  [this f]
-    (fn [addr]
-      (if-let [e (get-geocode-from-cache this (:address addr))]
-        (merge addr (select-keys e [:lat :lng]))
-        (let [ret (f addr)]
-          (add-geocode-to-cache this (:address ret) (:lat ret) (:lng ret))
-          (merge addr ret)))))
-  (memoize-weight   [this f]
-    (fn [from to]
-      (if-let [e (get-weight-from-cache this from to)]
-        (select-keys e [:distance :duration :points])
-        (let [ret (f from to)]
-          (add-weight-to-cache this from to  (:distance ret) (:duration ret) (:points ret))
-          ret)))))
+  (memoize-geocode [_ f] (cache/make-memoize-geocode {:infn f :addfn add-geocode-to-cache :getfn get-geocode-from-cache}))
+  (memoize-weight  [_ f] (cache/make-memoize-weight {:infn f :addfn add-weight-to-cache :getfn get-weight-from-cache})))
 
-(defmethod get-cache :mongo 
+(defmethod get-cache :mongo
   [{:keys [uri address edge] :as args}]
   (when (not (and uri address edge)) (throw (Exception. (str "Missing required arguments: uri: " uri " address: " address " edge: " edge))))
-  (let [conn  (atom (mg/connect-via-uri uri))]
-    (MongoCache. nil (assoc args :conn conn))))
+  (let [my-conn   (mg/connect-via-uri uri)]
+    (reset! cache (merge my-conn {:uri uri :address address :edge edge}))
+    (MongoCache.)))

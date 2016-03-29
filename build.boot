@@ -1,20 +1,19 @@
 (set-env!
   :dependencies  '[[adzerk/bootlaces            "0.1.11" :scope "test"]
-                   [com.novemberain/monger      "2.0.0"]
-                   [com.taoensso/faraday        "1.6.0"]
-                   [com.taoensso/carmine        "2.9.2"]
-                   [com.datomic/datomic-free    "0.9.5153"]
-                   
-                   
-                   ]
+                   [adzerk/env                  "0.2.0"]
+                   [com.novemberain/monger      "3.0.0-rc2"]
+                   [com.taoensso/faraday        "1.8.0"]
+                   [com.taoensso/carmine        "2.12.1"]
+                   [com.datomic/datomic-free    "0.9.5153"] ]
+  :target-path "target"
   :resource-paths #{"src"})
-
-(def +version+ "0.0.7")
-
+(require '[adzerk.bootlaces :refer :all])
+(def +version+ "0.0.11")
 (task-options!
- pom  {:project     'raywillig/geo-cache
+ pom  {:project     'rowtr/geo-cache
        :version     +version+
        :description "various cache mechanisms for geocodes and directions"
-       :url         "https://github.com/cljsjs/packages"
-       :scm         {:url "https://github.com/cljsjs/packages"}
-       :license     {"" ""}})
+       :url         "https://github.com/rwillig/geo-cache"
+       :scm         {:url "https://github.com/rwillig/geo-cache"}
+       :license     {"MIT License" "http://opensource.org/licenses/mit-license.php"}}
+ push {:repo        "clojars-upload" })

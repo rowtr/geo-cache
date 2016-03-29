@@ -14,11 +14,11 @@
           (merge addr# ret#)))))
 
 (defmacro make-memoize-weight [{:keys  [infn getfn addfn]}]
-  `(fn [from# to#]
-      (if-let [e# (~getfn from# to#)]
+  `(fn [rec#]
+      (if-let [e# (~getfn rec# )]
         (select-keys e# [:distance :duration :points])
-        (let [ret# (~infn from# to#)]
-          (~addfn from# to#  (:distance ret#) (:duration ret#) (:points ret#))
+        (let [ret# (~infn rec#)]
+          (~addfn (:from rec#) (:to rec#)  (:distance ret#) (:duration ret#) (:points ret#))
           ret#))))
 
 (defmulti get-cache :type)

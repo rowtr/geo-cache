@@ -2,6 +2,8 @@ pom.xml
 pom.xml.asc
 *.swp
 *jar
+.*
+*.rdb
 /lib/
 /classes/
 /target/
