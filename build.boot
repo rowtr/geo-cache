@@ -3,12 +3,12 @@
                    [adzerk/env                  "0.2.0"]
                    [com.novemberain/monger      "3.0.0-rc2"]
                    [com.taoensso/faraday        "1.8.0"]
-                   [com.taoensso/carmine        "2.12.1"]
+                   [com.taoensso/carmine        "2.14.0"]
                    [com.datomic/datomic-free    "0.9.5153"] ]
   :target-path "target"
   :resource-paths #{"src"})
 (require '[adzerk.bootlaces :refer :all])
-(def +version+ "0.0.11")
+(def +version+ "0.0.12")
 (task-options!
  pom  {:project     'rowtr/geo-cache
        :version     +version+

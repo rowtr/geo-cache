@@ -29,16 +29,17 @@
   (let [hash (shahash from to)]
     (wcar* (car/get (str "edge:" hash)))))
 
-(defn add-weight [from to distance duration points]
-  (let [hash                      (shahash from to)
-        data                      (assoc
-                                    {}
-                                    :distance distance
-                                    :duration duration
-                                    :points   points
-                                    :cache-date (Date.))]
-    (wcar*  (car/set (str "edge:" hash) data)))
-  (assoc {} :distance distance :duration duration))
+(defn add-weight [from to distance duration points no-cache]
+  (when-not no-cache
+    (let [hash                      (shahash from to)
+          data                      (assoc
+                                      {}
+                                      :distance distance
+                                      :duration duration
+                                      :points   points
+                                      :cache-date (Date.))]
+      (wcar*  (car/set (str "edge:" hash) data))))
+  (assoc {} :distance distance :duration duration :points points))
 
 (defrecord RedisCache
   [conn]

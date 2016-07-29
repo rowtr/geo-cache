@@ -18,7 +18,7 @@
       (if-let [e# (~getfn rec# )]
         (select-keys e# [:distance :duration :points])
         (let [ret# (~infn rec#)]
-          (~addfn (:from rec#) (:to rec#)  (:distance ret#) (:duration ret#) (:points ret#))
+          (~addfn (:from rec#) (:to rec#)  (:distance ret#) (:duration ret#) (:points ret#) (:no-cache ret#))
           ret#))))
 
 (defmulti get-cache :type)
@@ -27,7 +27,7 @@
 
 (defn coords->str
   [location]
-  (str (:lat location) "," (:lng location)))  
+  (str (:lat location) "," (:lng location)))
 
 (defn sha1 [s]
      (->> (-> "sha1"
@@ -43,6 +43,6 @@
 
 
 
-  
-  
-  
+
+
+
