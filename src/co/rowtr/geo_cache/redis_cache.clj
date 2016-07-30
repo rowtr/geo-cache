@@ -1,7 +1,7 @@
-(ns geo-cache.redis-cache
+(ns co.rowtr.geo-cache.redis-cache
   (:require
     [adzerk.env      :as env]
-    [geo-cache.cache :as cache :refer [get-cache shahash]])
+    [co.rowtr.geo-cache.cache :as cache :refer [get-cache shahash]])
   (:require [taoensso.carmine :as car :refer [wcar]]
             [clojure.string :refer [trim]])
   (:import java.text.SimpleDateFormat)

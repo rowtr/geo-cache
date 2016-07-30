@@ -8,7 +8,7 @@
   :target-path "target"
   :resource-paths #{"src"})
 (require '[adzerk.bootlaces :refer :all])
-(def +version+ "0.0.12")
+(def +version+ "1.0.0-SNAPSHOT")
 (task-options!
  pom  {:project     'rowtr/geo-cache
        :version     +version+

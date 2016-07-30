@@ -1,4 +1,4 @@
-(ns geo-cache.cache
+(ns co.rowtr.geo-cache.cache
   (:import java.util.UUID))
 
 (defprotocol IGeoCache
