@@ -10,7 +10,7 @@
       (if-let [e# (~getfn (:address addr#))]
         (merge addr# (select-keys e# [:lat :lng]))
         (let [ret# (~infn addr#)]
-          (~addfn (:address ret#) (:lat ret#) (:lng ret#))
+          (~addfn (:address ret#) ret#)
           (merge addr# ret#)))))
 
 (defmacro make-memoize-weight [{:keys  [infn getfn addfn]}]
@@ -18,7 +18,8 @@
       (if-let [e# (~getfn rec# )]
         (select-keys e# [:distance :duration :points])
         (let [ret# (~infn rec#)]
-          (~addfn (:from rec#) (:to rec#)  (:distance ret#) (:duration ret#) (:points ret#) (:no-cache ret#))
+          (when-not (-> ret# meta :no-cache)
+            (~addfn (:from rec#) (:to rec#)  ret#))
           ret#))))
 
 (defmulti get-cache :type)

@@ -17,10 +17,9 @@
 
 (defmacro wcar* [& body] `(wcar (~conn-opts) ~@body))
 
-(defn add-geocode [address lat lng]
-  (let [data      (assoc {} :lat lat :lng lng)]
-    (wcar* (car/set  (str "address:" address) data))
-  data))
+(defn add-geocode [address rec]
+  (wcar* (car/set  (str "address:" address) rec))
+  rec)
 
 (defn get-geocode [address]
   (wcar*  (car/get  (str "address:" address))))
@@ -29,17 +28,13 @@
   (let [hash (shahash from to)]
     (wcar* (car/get (str "edge:" hash)))))
 
-(defn add-weight [from to distance duration points no-cache]
-  (when-not no-cache
-    (let [hash                      (shahash from to)
-          data                      (assoc
-                                      {}
-                                      :distance distance
-                                      :duration duration
-                                      :points   points
-                                      :cache-date (Date.))]
-      (wcar*  (car/set (str "edge:" hash) data))))
-  (assoc {} :distance distance :duration duration :points points))
+(defn add-weight [from to rec]
+  (let [hash                      (shahash from to)
+        data                      (assoc
+                                    rec
+                                    :cache-date (Date.))]
+    (wcar*  (car/set (str "edge:" hash) data)))
+  rec)
 
 (defrecord RedisCache
   [conn]
